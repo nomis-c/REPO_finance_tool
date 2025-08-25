@@ -49,6 +49,7 @@ class RepoFinanceManager:
         self.transaction_history = []
         self.group_fund = 0.0  # Puffer money for the group
         self.total_money_at_round_start = 0.0  # Track money at start of each round
+        self.kill_bonuses_this_round = 0.0
 
     def add_player(self, player_name):
         """
@@ -134,6 +135,7 @@ class RepoFinanceManager:
         self.round_number += 1
         # Save total money at start of new round for automatic calculation
         self.total_money_at_round_start = self.get_total_money()
+        self.kill_bonuses_this_round = 0.0
 
     def get_total_money(self):
         """
@@ -166,44 +168,25 @@ class RepoFinanceManager:
         return current_total_shown_in_game - self.total_money_at_round_start
 
     def add_shared_earnings_auto(self, current_total_shown_in_game, description="Round earnings"):
-        """
-        Add shared earnings with automatic calculation of new money earned.
-
-        Takes the total money shown in REPO, automatically calculates how much
-        is new since round start, and splits only the new money among players.
-
-        Parameters
-        ----------
-        current_total_shown_in_game : float
-            The total money amount currently shown in REPO.
-        description : str, optional
-            Description of the earnings source (default: "Round earnings").
-
-        Returns
-        -------
-        tuple
-            (success: bool, new_earnings: float) - Success status and calculated new earnings.
-        """
         if len(self.players) == 0:
-            return False, 0
+            return False, 0, 0
 
-        # Calculate new earnings automatically
-        new_earnings = self.calculate_new_earnings(current_total_shown_in_game)
+        total_new_money = current_total_shown_in_game - self.total_money_at_round_start
+        shared_earnings = total_new_money - self.kill_bonuses_this_round
 
-        if new_earnings <= 0:
-            return False, new_earnings  # No new money to split
+        if total_new_money <= 0:
+            return False, total_new_money, shared_earnings
+        if shared_earnings <= 0:
+            return False, total_new_money, shared_earnings
 
-        # Split the new earnings
-        per_player_exact = new_earnings / len(self.players)
+        per_player_exact = shared_earnings / len(self.players)
         per_player_rounded = round_money_down(per_player_exact)
 
-        # Add rounded amount to each player
         for player in self.players:
             self.players[player] += per_player_rounded
 
-        # Calculate remainder and add to group fund
         total_distributed = per_player_rounded * len(self.players)
-        remainder = new_earnings - total_distributed
+        remainder = shared_earnings - total_distributed
         self.group_fund += remainder
 
         self.transaction_history.append({
@@ -212,13 +195,15 @@ class RepoFinanceManager:
             'description': description,
             'game_total': current_total_shown_in_game,
             'previous_total': self.total_money_at_round_start,
-            'new_earnings': new_earnings,
+            'total_new_money': total_new_money,
+            'kill_bonuses_this_round': self.kill_bonuses_this_round,
+            'shared_earnings': shared_earnings,
             'per_player': per_player_rounded,
             'remainder_to_fund': remainder,
             'players': list(self.players.keys())
         })
 
-        return True, new_earnings
+        return True, total_new_money, shared_earnings
 
 
     def add_kill_bonus(self, amount, players_involved, description="Kill bonus", use_group_fund=False):
@@ -272,6 +257,7 @@ class RepoFinanceManager:
         else:
             remainder = 0
 
+        self.kill_bonuses_this_round += amount
         self.transaction_history.append({
             'round': self.round_number,
             'type': 'kill_bonus',
@@ -564,3 +550,4 @@ class RepoFinanceManager:
         self.transaction_history = []
         self.group_fund = 0.0
         self.total_money_at_round_start = 0.0
+        self.kill_bonuses_this_round = 0.0

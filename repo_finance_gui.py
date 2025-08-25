@@ -207,11 +207,6 @@ class RepoFinanceGUI:
     def create_transactions_tab(self, parent):
         """
         Create the Transactions tab interface for managing all types of transactions.
-
-        Parameters
-        ----------
-        parent : tk.Widget
-            The parent widget to contain this tab's content.
         """
         # Create main frame with padding
         main_frame = tk.Frame(parent, bg='#2c2c54')
@@ -251,8 +246,39 @@ class RepoFinanceGUI:
         # Now use the scrollable frame for content
         frame = self.transactions_scrollable_frame
 
-        # Shared earnings
-        shared_frame = tk.LabelFrame(frame, text="Shared Earnings (Auto-Calculate)", bg='#2c2c54', fg='#00ff88',
+        # Kill bonus (FIRST - Enter kill bonuses before shared earnings)
+        kill_frame = tk.LabelFrame(frame, text="Kill Bonus", bg='#2c2c54', fg='#00ff88',
+                                   font=('Segoe UI', 12, 'bold'))
+        kill_frame.pack(fill='x', pady=(0, 15), padx=10)
+
+        kill_input = tk.Frame(kill_frame, bg='#2c2c54')
+        kill_input.pack(fill='x', padx=10, pady=10)
+
+        tk.Label(kill_input, text="Amount:", bg='#2c2c54', fg='white').pack(anchor='w')
+        self.kill_amount_entry = ttk.Entry(kill_input, font=('Segoe UI', 10))
+        self.kill_amount_entry.pack(fill='x', pady=(0, 5))
+
+        tk.Label(kill_input, text="Description:", bg='#2c2c54', fg='white').pack(anchor='w')
+        self.kill_desc_entry = ttk.Entry(kill_input, font=('Segoe UI', 10))
+        self.kill_desc_entry.pack(fill='x', pady=(0, 5))
+
+        tk.Label(kill_input, text="Players involved:", bg='#2c2c54', fg='white').pack(anchor='w')
+
+
+        self.kill_players_frame = tk.Frame(kill_input, bg='#2c2c54')
+        self.kill_players_frame.pack(fill='x', pady=(0, 5))
+
+        ttk.Button(kill_input, text="Add Kill Bonus", command=self.add_kill_bonus).pack(pady=5)
+
+        # Checkbox for using group fund
+        self.use_group_fund_var = tk.BooleanVar()
+        group_fund_cb = tk.Checkbutton(kill_input, text="Use Group Fund if amounts too small",
+                                       variable=self.use_group_fund_var, bg='#2c2c54', fg='white',
+                                       selectcolor='#1a1a2e')
+        group_fund_cb.pack(pady=5)
+
+        # Shared earnings (SECOND - After kill bonuses are entered)
+        shared_frame = tk.LabelFrame(frame, text="Shared Earnings", bg='#2c2c54', fg='#00ff88',
                                      font=('Segoe UI', 12, 'bold'))
         shared_frame.pack(fill='x', pady=(0, 15), padx=10)
 
@@ -273,36 +299,6 @@ class RepoFinanceGUI:
         self.shared_desc_entry.pack(fill='x', pady=(0, 5))
 
         ttk.Button(shared_input, text="Auto-Split New Earnings", command=self.add_shared_earnings_auto).pack(pady=5)
-
-        # Kill bonus
-        kill_frame = tk.LabelFrame(frame, text="Kill Bonus", bg='#2c2c54', fg='#00ff88',
-                                   font=('Segoe UI', 12, 'bold'))
-        kill_frame.pack(fill='x', pady=(0, 15), padx=10)
-
-        kill_input = tk.Frame(kill_frame, bg='#2c2c54')
-        kill_input.pack(fill='x', padx=10, pady=10)
-
-        tk.Label(kill_input, text="Amount:", bg='#2c2c54', fg='white').pack(anchor='w')
-        self.kill_amount_entry = ttk.Entry(kill_input, font=('Segoe UI', 10))
-        self.kill_amount_entry.pack(fill='x', pady=(0, 5))
-
-        tk.Label(kill_input, text="Description:", bg='#2c2c54', fg='white').pack(anchor='w')
-        self.kill_desc_entry = ttk.Entry(kill_input, font=('Segoe UI', 10))
-        self.kill_desc_entry.pack(fill='x', pady=(0, 5))
-
-        tk.Label(kill_input, text="Players involved:", bg='#2c2c54', fg='white').pack(anchor='w')
-
-        self.kill_players_frame = tk.Frame(kill_input, bg='#2c2c54')
-        self.kill_players_frame.pack(fill='x', pady=(0, 5))
-
-        ttk.Button(kill_input, text="Add Kill Bonus", command=self.add_kill_bonus).pack(pady=5)
-
-        # Checkbox for using group fund
-        self.use_group_fund_var = tk.BooleanVar()
-        group_fund_cb = tk.Checkbutton(kill_input, text="Use Group Fund if amounts too small",
-                                       variable=self.use_group_fund_var, bg='#2c2c54', fg='white',
-                                       selectcolor='#1a1a2e')
-        group_fund_cb.pack(pady=5)
 
         # Group Fund Management
         fund_frame = tk.LabelFrame(frame, text="Group Fund Management", bg='#2c2c54', fg='#00ff88',
@@ -683,29 +679,22 @@ class RepoFinanceGUI:
         self.update_display()
 
     def add_shared_earnings_auto(self):
-        """
-        Add shared earnings using automatic calculation of new money.
-
-        Uses the new auto-calculation feature to determine how much new money
-        was earned this round based on the total shown in REPO.
-        """
         try:
             total_in_game = float(self.shared_amount_entry.get())
             description = self.shared_desc_entry.get() or "Round earnings"
 
             if total_in_game >= 0:
-                success, new_earnings = self.manager.add_shared_earnings_auto(total_in_game, description)
+                success, total_new_money, shared_earnings = self.manager.add_shared_earnings_auto(total_in_game,
+                                                                                                  description)
 
                 if success:
                     self.shared_amount_entry.delete(0, tk.END)
                     self.shared_desc_entry.delete(0, tk.END)
                     self.update_display()
-
-                elif new_earnings <= 0:
+                elif shared_earnings <= 0:
                     messagebox.showwarning("No New Earnings",
                                            f"No new money to split.\n"
-                                           f"Game total ({total_in_game:.0f}) is not higher than previous total "
-                                           f"({self.manager.total_money_at_round_start:.0f}).")
+                                           f"Total new: {total_new_money:.0f}, Kill bonuses: {self.manager.kill_bonuses_this_round:.0f}")
                 else:
                     messagebox.showerror("Error", "Please add players first.")
             else:
