@@ -31,7 +31,7 @@ def main():
         # Initialize the GUI application
         app = RepoFinanceGUI(root)
 
-        # Start the main event loop
+        # Start the main event loop<
         root.mainloop()
 
     except Exception as e:
