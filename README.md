@@ -110,7 +110,7 @@ Displays current balances rounded to REPO's thousand-based currency:
 
 1. **Start of Round**: Click "Start New Round"
 2. **Kill monsters**: use "Kill bonus" for each monster kill
-3. **End of Round**: Enter total money shown in REPO using "Auto-SPlit new Earning"
+3. **End of Round**: Enter total money shown in REPO using "Auto-Split new Earning"
 4. **Buy Equipment**: Record purchases using "Player Spending"
 5. **Save Progress**: Use "Save Session" to preserve data
 
