@@ -5,7 +5,6 @@ This is the main entry point for the REPO Finance Manager application.
 Run this file to start the GUI application.
 """
 
-import tkinter as tk
 import sys
 
 try:
