@@ -24,7 +24,14 @@ def round_money_down(amount):
     -------
     int
         The amount rounded down to nearest thousand.
+
+    Raises
+    ------
+    ValueError
+        If amount is negative.
     """
+    if amount < 0:
+        raise ValueError(f"Amount cannot be negative: {amount}")
     return int(math.floor(amount / 1000) * 1000)
 
 

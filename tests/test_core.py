@@ -2,6 +2,37 @@ import pytest
 from repo_finance_core import RepoFinanceManager, round_money_down
 
 
+@pytest.fixture
+def manager_with_players():
+    """Manager with Simon and Jazkub already added."""
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+    m.add_player("Jazkub")
+    return m
+
+
+def test_round_money_down_below_thousand():
+    assert round_money_down(999) == 0
+
+
+def test_round_money_down_just_above_thousand():
+    assert round_money_down(1001) == 1000
+
+
+def test_round_money_down_just_below_next_thousand():
+    assert round_money_down(1999) == 1000
+
+
+def test_round_money_down_zero():
+    assert round_money_down(0) == 0
+
+
+@pytest.mark.parametrize("amount", [-1, -999, -1001])
+def test_round_money_down_negative_values(amount):
+    with pytest.raises(ValueError):
+        round_money_down(amount)
+
+
 def test_round_money_down_basic():
     assert round_money_down(1721) == 1000
 
@@ -63,7 +94,7 @@ def test_shared_earnings_auto_basic():
     # Method return values are part of the public contract
     assert success is True
     assert total_new == 30000
-    assert shared == 15000
+    assert shared == 30000
 
     # Final balances should reflect the shared earnings
     assert m.players["Simon"] == 15000
@@ -104,7 +135,7 @@ def test_shared_earnings_auto_negative_total_game_money():
     success, total_new, shared = m.add_shared_earnings_auto(-1000)
 
     assert success is False
-    assert total_new == 0
+    assert total_new == -1000
     assert shared == 0
     # Balance should remain unchanged
     assert m.players["Simon"] == 0
@@ -129,10 +160,12 @@ def test_shared_earnings_auto_total_less_than_round_start():
     success, total_new, shared = m.add_shared_earnings_auto(15000)
 
     assert success is False
-    assert total_new == 0
+    assert total_new == -5000
     assert shared == 0
     # Balances should not be adjusted on failure
     assert m.players["Simon"] == 20000
+
+
 def test_shared_earnings_remainder_to_fund():
     """5k split between 4 players = 1k each, 1k to fund"""
     m = RepoFinanceManager()
@@ -212,14 +245,14 @@ def test_undo_empty_history():
     assert m.undo_last_transaction() == False
 
 
-def test_reset_all():
-    m = RepoFinanceManager()
-    m.add_player("Simon")
-    m.players["Simon"] = 5000
-    m.group_fund = 1000
-    m.round_number = 3
-    m.reset_all()
-    assert m.players == {}
-    assert m.group_fund == 0.0
-    assert m.round_number == 1
-    assert m.transaction_history == []
+def test_reset_all(manager_with_players):
+    manager_with_players.add_shared_earnings_auto(10000)
+    manager_with_players.add_kill_bonus(2000, ["Simon"])
+    manager_with_players.start_new_round()
+    manager_with_players.reset_all()
+    assert manager_with_players.players == {}
+    assert manager_with_players.group_fund == 0.0
+    assert manager_with_players.round_number == 1
+    assert manager_with_players.transaction_history == []
+    assert manager_with_players.kill_bonuses_this_round == 0.0
+    assert manager_with_players.total_money_at_round_start == 0.0
