@@ -47,7 +47,7 @@ class RepoFileManager:
         filepath = filedialog.asksaveasfilename(
             defaultextension=".json",
             filetypes=[("REPO Finance Files", "*.json"), ("All Files", "*.*")],
-            title="Save REPO Finance Session"
+            title="Save REPO Finance Session",
         )
 
         if not filepath:
@@ -55,20 +55,22 @@ class RepoFileManager:
 
         try:
             save_data = {
-                'version': '1.0',
-                'saved_at': datetime.now().isoformat(),
-                'players': self.manager.players,
-                'round_number': self.manager.round_number,
-                'transaction_history': self.manager.transaction_history,
-                'group_fund': self.manager.group_fund,
-                'total_money_at_round_start': self.manager.total_money_at_round_start,
-                'kill_bonuses_this_round': self.manager.kill_bonuses_this_round
+                "version": "1.0",
+                "saved_at": datetime.now().isoformat(),
+                "players": self.manager.players,
+                "round_number": self.manager.round_number,
+                "transaction_history": self.manager.transaction_history,
+                "group_fund": self.manager.group_fund,
+                "total_money_at_round_start": self.manager.total_money_at_round_start,
+                "kill_bonuses_this_round": self.manager.kill_bonuses_this_round,
             }
 
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(save_data, f, indent=2, ensure_ascii=False)
 
-            messagebox.showinfo("Success", f"Session saved to:\n{os.path.basename(filepath)}")
+            messagebox.showinfo(
+                "Success", f"Session saved to:\n{os.path.basename(filepath)}"
+            )
             return True
 
         except Exception as e:
@@ -89,19 +91,21 @@ class RepoFileManager:
             True if load was successful, False otherwise.
         """
         # Confirm before loading
-        if not messagebox.askyesno("Confirm", "Loading will replace current data. Continue?"):
+        if not messagebox.askyesno(
+            "Confirm", "Loading will replace current data. Continue?"
+        ):
             return False
 
         filepath = filedialog.askopenfilename(
             filetypes=[("REPO Finance Files", "*.json"), ("All Files", "*.*")],
-            title="Load REPO Finance Session"
+            title="Load REPO Finance Session",
         )
 
         if not filepath:
             return False
 
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(filepath, "r", encoding="utf-8") as f:
                 save_data = json.load(f)
 
             # Validate data structure
@@ -109,18 +113,26 @@ class RepoFileManager:
                 raise ValueError("Invalid file format")
 
             # Load data with defaults for missing fields
-            self.manager.players = save_data.get('players', {})
-            self.manager.round_number = save_data.get('round_number', 1)
-            self.manager.transaction_history = save_data.get('transaction_history', [])
-            self.manager.group_fund = save_data.get('group_fund', 0.0)
-            self.manager.total_money_at_round_start = save_data.get('total_money_at_round_start', 0.0)
-            self.manager.kill_bonuses_this_round = save_data.get('kill_bonuses_this_round', 0.0)
+            self.manager.players = save_data.get("players", {})
+            self.manager.round_number = save_data.get("round_number", 1)
+            self.manager.transaction_history = save_data.get("transaction_history", [])
+            self.manager.group_fund = save_data.get("group_fund", 0.0)
+            self.manager.total_money_at_round_start = save_data.get(
+                "total_money_at_round_start", 0.0
+            )
+            self.manager.kill_bonuses_this_round = save_data.get(
+                "kill_bonuses_this_round", 0.0
+            )
 
-            messagebox.showinfo("Success", f"Session loaded from:\n{os.path.basename(filepath)}")
+            messagebox.showinfo(
+                "Success", f"Session loaded from:\n{os.path.basename(filepath)}"
+            )
             return True
 
         except json.JSONDecodeError:
-            messagebox.showerror("Error", "File is not a valid JSON file or is corrupted.")
+            messagebox.showerror(
+                "Error", "File is not a valid JSON file or is corrupted."
+            )
             return False
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load session:\n{str(e)}")
@@ -142,14 +154,14 @@ class RepoFileManager:
         filepath = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
-            title="Export Summary Report"
+            title="Export Summary Report",
         )
 
         if not filepath:
             return False
 
         try:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 # Header
                 f.write("REPO Finance Manager - Session Summary\n")
                 f.write("=" * 50 + "\n")
@@ -202,43 +214,67 @@ class RepoFileManager:
 
                 if self.manager.transaction_history:
                     # Show last 20 transactions, newest first
-                    recent_transactions = list(reversed(self.manager.transaction_history[-20:]))
+                    recent_transactions = list(
+                        reversed(self.manager.transaction_history[-20:])
+                    )
 
                     for transaction in recent_transactions:
                         # Format transaction based on type
-                        if transaction['type'] == 'shared_earnings_auto':
-                            f.write(f"Round {transaction['round']}: {transaction['description']}\n")
-                            f.write(f"  → NEW EARNINGS: {transaction.get('shared_earnings', 0):.0f}\n")
-                            f.write(f"  → Per player: {transaction.get('per_player', 0)}\n")
-                            if transaction.get('remainder_to_fund', 0) > 0:
-                                f.write(f"  → To group fund: {transaction['remainder_to_fund']:.0f}\n")
+                        if transaction["type"] == "shared_earnings_auto":
+                            f.write(
+                                f"Round {transaction['round']}: {transaction['description']}\n"
+                            )
+                            f.write(
+                                f"  → NEW EARNINGS: {transaction.get('shared_earnings', 0):.0f}\n"
+                            )
+                            f.write(
+                                f"  → Per player: {transaction.get('per_player', 0)}\n"
+                            )
+                            if transaction.get("remainder_to_fund", 0) > 0:
+                                f.write(
+                                    f"  → To group fund: {transaction['remainder_to_fund']:.0f}\n"
+                                )
 
-                        elif transaction['type'] == 'kill_bonus':
-                            f.write(f"Round {transaction['round']}: {transaction['description']}\n")
+                        elif transaction["type"] == "kill_bonus":
+                            f.write(
+                                f"Round {transaction['round']}: {transaction['description']}\n"
+                            )
                             f.write(f"  → Total: {transaction['total_amount']}\n")
-                            f.write(f"  → Players: {', '.join(transaction['players'])}\n")
-                            if transaction.get('group_fund_used', 0) > 0:
-                                f.write(f"  → Used from group fund: {transaction['group_fund_used']}\n")
+                            f.write(
+                                f"  → Players: {', '.join(transaction['players'])}\n"
+                            )
+                            if transaction.get("group_fund_used", 0) > 0:
+                                f.write(
+                                    f"  → Used from group fund: {transaction['group_fund_used']}\n"
+                                )
 
-                        elif transaction['type'] == 'spending':
-                            f.write(f"Round {transaction['round']}: {transaction['player']} Spending\n")
+                        elif transaction["type"] == "spending":
+                            f.write(
+                                f"Round {transaction['round']}: {transaction['player']} Spending\n"
+                            )
                             f.write(f"  → Amount: {transaction['amount']}\n")
                             f.write(f"  → Item: {transaction['description']}\n")
 
-                        elif transaction['type'] == 'group_fund_addition':
-                            f.write(f"Round {transaction['round']}: Group Fund Addition\n")
+                        elif transaction["type"] == "group_fund_addition":
+                            f.write(
+                                f"Round {transaction['round']}: Group Fund Addition\n"
+                            )
                             f.write(f"  → Amount: {transaction['amount']}\n")
                             f.write(f"  → Reason: {transaction['description']}\n")
 
-                        elif transaction['type'] == 'group_fund_usage':
+                        elif transaction["type"] == "group_fund_usage":
                             f.write(f"Round {transaction['round']}: Group Fund Usage\n")
                             f.write(f"  → Amount: {transaction['amount']}\n")
                             f.write(f"  → Reason: {transaction['description']}\n")
 
-                        elif transaction['type'] == 'player_removal_redistribution':
+                        elif transaction["type"] == "player_removal_redistribution":
                             f.write(f"Round {transaction['round']}: Player Removal\n")
-                            f.write(f"  → Removed: {transaction.get('removed_player', 'Unknown')}\n")
-                            f.write(f"  → Redistributed: {transaction.get('original_balance', 0):.0f}\n")
+                            f.write(
+                                f"  → Removed: {transaction.get('removed_player', 'Unknown')}\n"
+                            )
+                            f.write(
+                                f"  → Redistributed: {transaction.get('original_balance', 0):.0f}\n"
+                            )
 
                         f.write("\n")
                 else:
@@ -248,7 +284,9 @@ class RepoFileManager:
                 f.write("-" * 50 + "\n")
                 f.write("End of Report\n")
 
-            messagebox.showinfo("Success", f"Summary exported to:\n{os.path.basename(filepath)}")
+            messagebox.showinfo(
+                "Success", f"Summary exported to:\n{os.path.basename(filepath)}"
+            )
             return True
 
         except Exception as e:
@@ -275,17 +313,17 @@ class RepoFileManager:
 
         try:
             save_data = {
-                'version': '1.0',
-                'saved_at': datetime.now().isoformat(),
-                'players': self.manager.players,
-                'round_number': self.manager.round_number,
-                'transaction_history': self.manager.transaction_history,
-                'group_fund': self.manager.group_fund,
-                'total_money_at_round_start': self.manager.total_money_at_round_start,
-                'kill_bonuses_this_round': self.manager.kill_bonuses_this_round
+                "version": "1.0",
+                "saved_at": datetime.now().isoformat(),
+                "players": self.manager.players,
+                "round_number": self.manager.round_number,
+                "transaction_history": self.manager.transaction_history,
+                "group_fund": self.manager.group_fund,
+                "total_money_at_round_start": self.manager.total_money_at_round_start,
+                "kill_bonuses_this_round": self.manager.kill_bonuses_this_round,
             }
 
-            with open(filename, 'w', encoding='utf-8') as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 json.dump(save_data, f, indent=2, ensure_ascii=False)
 
             return True

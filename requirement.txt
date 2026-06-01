@@ -1,2 +1,2 @@
 # REPO Finance Manager
-# tkinter is included with Python by default
+nicegui>=1.4.0

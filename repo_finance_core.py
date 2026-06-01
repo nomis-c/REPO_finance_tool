@@ -111,16 +111,18 @@ class RepoFinanceManager:
             self.group_fund += remainder
 
             # Record the redistribution transaction
-            self.transaction_history.append({
-                'round': self.round_number,
-                'type': 'player_removal_redistribution',
-                'description': f"Redistributed {player_name}'s money after removal",
-                'removed_player': player_name,
-                'original_balance': player_balance,
-                'per_player': per_player,
-                'remainder_to_fund': remainder,
-                'players': list(self.players.keys())
-            })
+            self.transaction_history.append(
+                {
+                    "round": self.round_number,
+                    "type": "player_removal_redistribution",
+                    "description": f"Redistributed {player_name}'s money after removal",
+                    "removed_player": player_name,
+                    "original_balance": player_balance,
+                    "per_player": per_player,
+                    "remainder_to_fund": remainder,
+                    "players": list(self.players.keys()),
+                }
+            )
 
         return True
 
@@ -167,7 +169,9 @@ class RepoFinanceManager:
         """
         return current_total_shown_in_game - self.total_money_at_round_start
 
-    def add_shared_earnings_auto(self, current_total_shown_in_game, description="Round earnings"):
+    def add_shared_earnings_auto(
+        self, current_total_shown_in_game, description="Round earnings"
+    ):
         if len(self.players) == 0:
             return False, 0, 0
 
@@ -189,24 +193,27 @@ class RepoFinanceManager:
         remainder = shared_earnings - total_distributed
         self.group_fund += remainder
 
-        self.transaction_history.append({
-            'round': self.round_number,
-            'type': 'shared_earnings_auto',
-            'description': description,
-            'game_total': current_total_shown_in_game,
-            'previous_total': self.total_money_at_round_start,
-            'total_new_money': total_new_money,
-            'kill_bonuses_this_round': self.kill_bonuses_this_round,
-            'shared_earnings': shared_earnings,
-            'per_player': per_player_rounded,
-            'remainder_to_fund': remainder,
-            'players': list(self.players.keys())
-        })
+        self.transaction_history.append(
+            {
+                "round": self.round_number,
+                "type": "shared_earnings_auto",
+                "description": description,
+                "game_total": current_total_shown_in_game,
+                "previous_total": self.total_money_at_round_start,
+                "total_new_money": total_new_money,
+                "kill_bonuses_this_round": self.kill_bonuses_this_round,
+                "shared_earnings": shared_earnings,
+                "per_player": per_player_rounded,
+                "remainder_to_fund": remainder,
+                "players": list(self.players.keys()),
+            }
+        )
 
         return True, total_new_money, shared_earnings
 
-
-    def add_kill_bonus(self, amount, players_involved, description="Kill bonus", use_group_fund=False):
+    def add_kill_bonus(
+        self, amount, players_involved, description="Kill bonus", use_group_fund=False
+    ):
         """
         Add kill bonus to specific player(s) who participated in a monster kill.
 
@@ -239,7 +246,11 @@ class RepoFinanceManager:
 
         # If individual amount is too small and group fund available, supplement
         group_fund_used = 0
-        if use_group_fund and per_player_rounded == 0 and self.group_fund >= 1000 * len(players_involved):
+        if (
+            use_group_fund
+            and per_player_rounded == 0
+            and self.group_fund >= 1000 * len(players_involved)
+        ):
             per_player_rounded = 1000  # Give 1k to each player
             group_fund_used = 1000 * len(players_involved)
             self.group_fund -= group_fund_used
@@ -258,16 +269,18 @@ class RepoFinanceManager:
             remainder = 0
 
         self.kill_bonuses_this_round += amount
-        self.transaction_history.append({
-            'round': self.round_number,
-            'type': 'kill_bonus',
-            'description': description,
-            'total_amount': amount,
-            'per_player': per_player_rounded,
-            'remainder_to_fund': remainder,
-            'group_fund_used': group_fund_used,
-            'players': players_involved
-        })
+        self.transaction_history.append(
+            {
+                "round": self.round_number,
+                "type": "kill_bonus",
+                "description": description,
+                "total_amount": amount,
+                "per_player": per_player_rounded,
+                "remainder_to_fund": remainder,
+                "group_fund_used": group_fund_used,
+                "players": players_involved,
+            }
+        )
         return True
 
     def record_spending(self, player_name, amount, description="Purchase"):
@@ -296,13 +309,15 @@ class RepoFinanceManager:
 
         self.players[player_name] -= amount
 
-        self.transaction_history.append({
-            'round': self.round_number,
-            'type': 'spending',
-            'description': description,
-            'amount': amount,
-            'player': player_name
-        })
+        self.transaction_history.append(
+            {
+                "round": self.round_number,
+                "type": "spending",
+                "description": description,
+                "amount": amount,
+                "player": player_name,
+            }
+        )
         return True
 
     def add_to_group_fund(self, amount, description="Group fund addition"):
@@ -318,12 +333,14 @@ class RepoFinanceManager:
         """
         self.group_fund += amount
 
-        self.transaction_history.append({
-            'round': self.round_number,
-            'type': 'group_fund_addition',
-            'description': description,
-            'amount': amount
-        })
+        self.transaction_history.append(
+            {
+                "round": self.round_number,
+                "type": "group_fund_addition",
+                "description": description,
+                "amount": amount,
+            }
+        )
 
     def use_group_fund(self, amount, description="Group fund usage"):
         """
@@ -344,12 +361,14 @@ class RepoFinanceManager:
         if self.group_fund >= amount:
             self.group_fund -= amount
 
-            self.transaction_history.append({
-                'round': self.round_number,
-                'type': 'group_fund_usage',
-                'description': description,
-                'amount': amount
-            })
+            self.transaction_history.append(
+                {
+                    "round": self.round_number,
+                    "type": "group_fund_usage",
+                    "description": description,
+                    "amount": amount,
+                }
+            )
             return True
         return False
 
@@ -381,52 +400,52 @@ class RepoFinanceManager:
 
         last_transaction = self.transaction_history.pop()
 
-        if last_transaction['type'] == 'shared_earnings':
-            for player in last_transaction['players']:
+        if last_transaction["type"] == "shared_earnings":
+            for player in last_transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= last_transaction['per_player']
+                    self.players[player] -= last_transaction["per_player"]
             # Reverse group fund addition
-            if 'remainder_to_fund' in last_transaction:
-                self.group_fund -= last_transaction['remainder_to_fund']
+            if "remainder_to_fund" in last_transaction:
+                self.group_fund -= last_transaction["remainder_to_fund"]
 
-        elif last_transaction['type'] == 'shared_earnings_auto':
-            for player in last_transaction['players']:
+        elif last_transaction["type"] == "shared_earnings_auto":
+            for player in last_transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= last_transaction['per_player']
+                    self.players[player] -= last_transaction["per_player"]
             # Reverse group fund addition
-            if 'remainder_to_fund' in last_transaction:
-                self.group_fund -= last_transaction['remainder_to_fund']
+            if "remainder_to_fund" in last_transaction:
+                self.group_fund -= last_transaction["remainder_to_fund"]
 
-        elif last_transaction['type'] == 'player_removal_redistribution':
+        elif last_transaction["type"] == "player_removal_redistribution":
             # This is tricky - we can't easily undo a player removal
             # For now, just reverse the money redistribution
-            for player in last_transaction['players']:
+            for player in last_transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= last_transaction['per_player']
+                    self.players[player] -= last_transaction["per_player"]
             # Reverse group fund changes
-            self.group_fund -= last_transaction['per_player']
-            if 'remainder_to_fund' in last_transaction:
-                self.group_fund -= last_transaction['remainder_to_fund']
+            self.group_fund -= last_transaction["per_player"]
+            if "remainder_to_fund" in last_transaction:
+                self.group_fund -= last_transaction["remainder_to_fund"]
 
-        elif last_transaction['type'] == 'kill_bonus':
-            for player in last_transaction['players']:
+        elif last_transaction["type"] == "kill_bonus":
+            for player in last_transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= last_transaction['per_player']
+                    self.players[player] -= last_transaction["per_player"]
             # Reverse group fund changes
-            if 'remainder_to_fund' in last_transaction:
-                self.group_fund -= last_transaction['remainder_to_fund']
-            if 'group_fund_used' in last_transaction:
-                self.group_fund += last_transaction['group_fund_used']
+            if "remainder_to_fund" in last_transaction:
+                self.group_fund -= last_transaction["remainder_to_fund"]
+            if "group_fund_used" in last_transaction:
+                self.group_fund += last_transaction["group_fund_used"]
 
-        elif last_transaction['type'] == 'spending':
-            if last_transaction['player'] in self.players:
-                self.players[last_transaction['player']] += last_transaction['amount']
+        elif last_transaction["type"] == "spending":
+            if last_transaction["player"] in self.players:
+                self.players[last_transaction["player"]] += last_transaction["amount"]
 
-        elif last_transaction['type'] == 'group_fund_addition':
-            self.group_fund -= last_transaction['amount']
+        elif last_transaction["type"] == "group_fund_addition":
+            self.group_fund -= last_transaction["amount"]
 
-        elif last_transaction['type'] == 'group_fund_usage':
-            self.group_fund += last_transaction['amount']
+        elif last_transaction["type"] == "group_fund_usage":
+            self.group_fund += last_transaction["amount"]
 
         return True
 
@@ -452,51 +471,51 @@ class RepoFinanceManager:
 
         transaction = self.transaction_history[transaction_index]
 
-        if transaction['type'] == 'shared_earnings':
-            for player in transaction['players']:
+        if transaction["type"] == "shared_earnings":
+            for player in transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= transaction['per_player']
+                    self.players[player] -= transaction["per_player"]
             # Reverse group fund addition
-            if 'remainder_to_fund' in transaction:
-                self.group_fund -= transaction['remainder_to_fund']
+            if "remainder_to_fund" in transaction:
+                self.group_fund -= transaction["remainder_to_fund"]
 
-        elif transaction['type'] == 'shared_earnings_auto':
-            for player in transaction['players']:
+        elif transaction["type"] == "shared_earnings_auto":
+            for player in transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= transaction['per_player']
+                    self.players[player] -= transaction["per_player"]
             # Reverse group fund addition
-            if 'remainder_to_fund' in transaction:
-                self.group_fund -= transaction['remainder_to_fund']
+            if "remainder_to_fund" in transaction:
+                self.group_fund -= transaction["remainder_to_fund"]
 
-        elif transaction['type'] == 'player_removal_redistribution':
+        elif transaction["type"] == "player_removal_redistribution":
             # Reverse the money redistribution
-            for player in transaction['players']:
+            for player in transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= transaction['per_player']
+                    self.players[player] -= transaction["per_player"]
             # Reverse group fund changes
-            self.group_fund -= transaction['per_player']
-            if 'remainder_to_fund' in transaction:
-                self.group_fund -= transaction['remainder_to_fund']
+            self.group_fund -= transaction["per_player"]
+            if "remainder_to_fund" in transaction:
+                self.group_fund -= transaction["remainder_to_fund"]
 
-        elif transaction['type'] == 'kill_bonus':
-            for player in transaction['players']:
+        elif transaction["type"] == "kill_bonus":
+            for player in transaction["players"]:
                 if player in self.players:
-                    self.players[player] -= transaction['per_player']
+                    self.players[player] -= transaction["per_player"]
             # Reverse group fund changes
-            if 'remainder_to_fund' in transaction:
-                self.group_fund -= transaction['remainder_to_fund']
-            if 'group_fund_used' in transaction:
-                self.group_fund += transaction['group_fund_used']
+            if "remainder_to_fund" in transaction:
+                self.group_fund -= transaction["remainder_to_fund"]
+            if "group_fund_used" in transaction:
+                self.group_fund += transaction["group_fund_used"]
 
-        elif transaction['type'] == 'spending':
-            if transaction['player'] in self.players:
-                self.players[transaction['player']] += transaction['amount']
+        elif transaction["type"] == "spending":
+            if transaction["player"] in self.players:
+                self.players[transaction["player"]] += transaction["amount"]
 
-        elif transaction['type'] == 'group_fund_addition':
-            self.group_fund -= transaction['amount']
+        elif transaction["type"] == "group_fund_addition":
+            self.group_fund -= transaction["amount"]
 
-        elif transaction['type'] == 'group_fund_usage':
-            self.group_fund += transaction['amount']
+        elif transaction["type"] == "group_fund_usage":
+            self.group_fund += transaction["amount"]
 
         self.transaction_history.pop(transaction_index)
         return True
@@ -534,8 +553,10 @@ class RepoFinanceManager:
         dict
             Dictionary mapping player names to their rounded balances.
         """
-        return {player: round_money_down(balance)
-                for player, balance in self.players.items()}
+        return {
+            player: round_money_down(balance)
+            for player, balance in self.players.items()
+        }
 
     def reset_all(self):
         """
