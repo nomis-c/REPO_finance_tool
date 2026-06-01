@@ -91,7 +91,7 @@ def history_display():
         # Build text and color per transaction type
         if t["type"] == "shared_earnings_auto":
             color = "border-green-400"
-            text = f"Round {t['round']}: {t['description']} — NEW: {t['new_earnings']:.0f} ({t['per_player']} each"
+            text = f"Round {t['round']}: {t['description']} — NEW: {t['shared_earnings']:.0f} ({t['per_player']} each"
             if t.get("remainder_to_fund", 0) > 0:
                 text += f", +{t['remainder_to_fund']:.0f} to fund"
             text += f") [Game: {t['game_total']:.0f}]"

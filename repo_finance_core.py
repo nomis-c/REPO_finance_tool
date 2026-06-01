@@ -424,13 +424,10 @@ class RepoFinanceManager:
                 self.group_fund -= last_transaction["remainder_to_fund"]
 
         elif last_transaction["type"] == "player_removal_redistribution":
-            # This is tricky - we can't easily undo a player removal
-            # For now, just reverse the money redistribution
             for player in last_transaction["players"]:
                 if player in self.players:
                     self.players[player] -= last_transaction["per_player"]
             # Reverse group fund changes
-            self.group_fund -= last_transaction["per_player"]
             if "remainder_to_fund" in last_transaction:
                 self.group_fund -= last_transaction["remainder_to_fund"]
 
@@ -443,6 +440,7 @@ class RepoFinanceManager:
                 self.group_fund -= last_transaction["remainder_to_fund"]
             if "group_fund_used" in last_transaction:
                 self.group_fund += last_transaction["group_fund_used"]
+            self.kill_bonuses_this_round = max(0, self.kill_bonuses_this_round - last_transaction['total_amount'])
 
         elif last_transaction["type"] == "spending":
             if last_transaction["player"] in self.players:
@@ -500,7 +498,6 @@ class RepoFinanceManager:
                 if player in self.players:
                     self.players[player] -= transaction["per_player"]
             # Reverse group fund changes
-            self.group_fund -= transaction["per_player"]
             if "remainder_to_fund" in transaction:
                 self.group_fund -= transaction["remainder_to_fund"]
 
@@ -513,6 +510,7 @@ class RepoFinanceManager:
                 self.group_fund -= transaction["remainder_to_fund"]
             if "group_fund_used" in transaction:
                 self.group_fund += transaction["group_fund_used"]
+            self.kill_bonuses_this_round = max(0, self.kill_bonuses_this_round - transaction['total_amount'])
 
         elif transaction["type"] == "spending":
             if transaction["player"] in self.players:
