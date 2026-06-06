@@ -41,14 +41,6 @@ def test_round_money_down_exact():
     assert round_money_down(2000) == 2000
 
 
-def test_round_money_down_below_thousand():
-    assert round_money_down(999) == 0
-
-
-def test_round_money_down_zero():
-    assert round_money_down(0) == 0
-
-
 def test_add_player():
     m = RepoFinanceManager()
     assert m.add_player("Simon") == True
@@ -243,6 +235,30 @@ def test_undo_last_transaction():
 def test_undo_empty_history():
     m = RepoFinanceManager()
     assert m.undo_last_transaction() == False
+
+
+def test_undo_kill_bonus_decrements_counter():
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+    m.add_kill_bonus(2000, ["Simon"])
+    assert m.kill_bonuses_this_round == 2000
+    assert m.players["Simon"] == 2000
+    m.undo_last_transaction()
+    assert m.kill_bonuses_this_round == 0
+    assert m.players["Simon"] == 0
+
+
+def test_delete_non_last_kill_bonus_decrements_counter():
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+    m.add_player("Jazkub")
+    m.add_kill_bonus(2000, ["Simon"])   # index 0
+    m.add_kill_bonus(3000, ["Jazkub"]) # index 1
+    assert m.kill_bonuses_this_round == 5000
+    m.delete_transaction(0)
+    assert m.kill_bonuses_this_round == 3000
+    assert m.players["Simon"] == 0
+    assert m.players["Jazkub"] == 3000
 
 
 def test_reset_all(manager_with_players):

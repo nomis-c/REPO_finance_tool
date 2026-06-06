@@ -186,9 +186,9 @@ class RepoFinanceManager:
         shared_earnings = total_new_money - self.kill_bonuses_this_round
 
         if total_new_money <= 0:
-            return False, total_new_money, shared_earnings
+            return False, total_new_money, 0
         if shared_earnings <= 0:
-            return False, total_new_money, shared_earnings
+            return False, total_new_money, 0
 
         per_player_exact = shared_earnings / len(self.players)
         per_player_rounded = round_money_down(per_player_exact)
