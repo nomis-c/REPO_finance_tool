@@ -11,6 +11,7 @@ from repo_finance_core import RepoFinanceManager, round_money_down
 
 manager = RepoFinanceManager()
 kill_checkboxes: dict = {}
+spending_ui: dict = {}
 
 
 def format_money(amount):
@@ -158,6 +159,9 @@ def refresh():
     balances_display.refresh()
     history_display.refresh()
     current_total_label.refresh()
+    if "select" in spending_ui:
+        spending_ui["select"].options = list(manager.players.keys())
+        spending_ui["select"].update()
 
 
 def remove_player(player_name):
@@ -426,18 +430,14 @@ def create_ui():
                         "text-green-400 font-bold text-lg mb-2"
                     )
                     spending_select = ui.select(
-                        options=[], label="Select Player"
+                        options=list(manager.players.keys()), label="Select Player"
                     ).classes("w-full")
+                    spending_ui["select"] = spending_select
                     spending_amount = ui.number(label="Amount", format="%.0f").classes(
                         "w-full"
                     )
                     spending_desc = ui.input(label="Item purchased (optional)").classes(
                         "w-full"
-                    )
-
-                    # Keep spending select updated
-                    spending_select.bind_value_from(
-                        manager, "players", backward=lambda p: list(p.keys())
                     )
 
                     def on_record_spending():
